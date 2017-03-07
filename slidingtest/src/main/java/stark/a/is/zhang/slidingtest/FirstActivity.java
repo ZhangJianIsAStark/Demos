@@ -8,8 +8,6 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 
 public class FirstActivity extends AppCompatActivity {
-    private VelocityTracker mVelocityTracker;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +54,8 @@ public class FirstActivity extends AppCompatActivity {
 
         return true;
     }
+
+    private VelocityTracker mVelocityTracker;
 
     private void addEventToVelocityTracker(MotionEvent event) {
         if (mVelocityTracker == null) {

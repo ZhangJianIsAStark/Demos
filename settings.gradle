@@ -1,1 +1,1 @@
-include ':slidingtest'
+include ':slidingtest', ':viewpagertest'
