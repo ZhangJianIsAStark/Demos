@@ -8,8 +8,10 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/messengertest" />
             <option value="$PROJECT_DIR$/slidingtest" />
             <option value="$PROJECT_DIR$/viewpagertest" />
+            <option value="$PROJECT_DIR$/wifitest" />
           </set>
         </option>
         <option name="resolveModulePerSourceSet" value="false" />
