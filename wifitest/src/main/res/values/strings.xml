@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">WifiTest</string>
+
+    <string name="enable_wifi">Open Wifi</string>
+    <string name="get_wifi_info">Get Wifi Information</string>
+
+    <string name="scan_wifi_name">Name: %s</string>
+    <string name="scan_wifi_level">Level: %s</string>
 </resources>
