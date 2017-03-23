@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">VolleyTest</string>
+
+    <string name="string_request">String Request Test</string>
+    <string name="json_request">JSON Request Test</string>
+    <string name="image_request">Image Request Test</string>
+    <string name="image_loader">Image Loader Test</string>
+    <string name="network_image_view">Network Image View Test</string>
+    <string name="customize_request">Customize Request Test</string>
+</resources>

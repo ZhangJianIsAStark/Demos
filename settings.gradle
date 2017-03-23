@@ -1,1 +1,1 @@
-include ':slidingtest', ':viewpagertest', ':wifitest', ':messengertest', ':zxingtest'
+include ':slidingtest', ':viewpagertest', ':wifitest', ':messengertest', ':zxingtest', ':volleytest'
