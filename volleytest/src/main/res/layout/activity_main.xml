@@ -42,6 +42,7 @@
         android:textAllCaps="false"/>
 
     <Button
+        android:id="@+id/custom_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/customize_request"
@@ -74,7 +75,7 @@
                 android:layout_gravity="center_horizontal"
                 android:contentDescription="@null"/>
 
-            <FrameLayout
+            <com.android.volley.toolbox.NetworkImageView
                 android:id="@+id/network_image_view"
                 android:layout_width="120dp"
                 android:layout_height="120dp"
