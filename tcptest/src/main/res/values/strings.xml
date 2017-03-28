@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">TcpTest</string>
+
+    <string name="client_name">I am a Client</string>
+    <string name="server_name">I am a Server</string>
+    <string name="go_settings">Go to set permissions</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="server_title">I am a server, i am marching on!</string>
+</resources>
