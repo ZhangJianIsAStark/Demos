@@ -19,11 +19,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.lang.ref.WeakReference;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import stark.a.is.zhang.tcptest.R;
 import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
 public class ServerActivity extends AppCompatActivity {
+    private static String TAG = "ZJTest:ServerActivity";
+
     private Messenger mLocalMessenger;
 
     private BroadcastReceiver mBroadcastReceiver;
@@ -34,6 +39,8 @@ public class ServerActivity extends AppCompatActivity {
 
     private TextView mTextView;
 
+    private SimpleDateFormat mDf;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +49,8 @@ public class ServerActivity extends AppCompatActivity {
         mLocalMessenger = new Messenger(new LocalHandler(this));
 
         mTextView = (TextView) findViewById(R.id.log_text);
+
+        mDf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CHINA);
 
         registerBroadcastReceiver();
 
@@ -66,7 +75,11 @@ public class ServerActivity extends AppCompatActivity {
     }
 
     private void appendLog(String str) {
-        mTextView.append(str);
+        String log = mDf.format(new Date())
+                .concat(":    ")
+                .concat(str)
+                .concat("\n");
+        mTextView.append(log);
     }
 
     private void registerBroadcastReceiver() {
@@ -136,14 +149,16 @@ public class ServerActivity extends AppCompatActivity {
     }
 
     private void sendMsgToService(int msgId, Messenger replyTo) {
-        Message msg = Message.obtain();
-        msg.what = msgId;
-        msg.replyTo = replyTo;
+        if (mServiceMessenger != null) {
+            Message msg = Message.obtain();
+            msg.what = msgId;
+            msg.replyTo = replyTo;
 
-        try {
-            mServiceMessenger.send(msg);
-        } catch (RemoteException e) {
-            Log.d("ZJTest", e.toString());
+            try {
+                mServiceMessenger.send(msg);
+            } catch (RemoteException e) {
+                Log.d(TAG, e.toString());
+            }
         }
     }
 

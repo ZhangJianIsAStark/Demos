@@ -3,7 +3,6 @@ package stark.a.is.zhang.tcptest;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
@@ -16,6 +15,7 @@ import android.widget.Button;
 
 import stark.a.is.zhang.tcptest.client.ClientActivity;
 import stark.a.is.zhang.tcptest.server.ServerActivity;
+import stark.a.is.zhang.tcptest.util.AnimatorUtil;
 
 public class MainActivity extends AppCompatActivity
         implements View.OnClickListener {
@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity
     private Button mServerButton;
 
     private static int PERMISSION_REQUEST_CODE = 0;
+
     private static String[] NEEDED_PERMISSION = new String[] {
             Manifest.permission.WRITE_EXTERNAL_STORAGE
     };
@@ -152,15 +153,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void startAnimator(View view) {
-        PropertyValuesHolder pvhX =
-                PropertyValuesHolder.ofFloat("scaleX", 1.0f, 0.8f, 1.0f);
-
-        PropertyValuesHolder pvhY =
-                PropertyValuesHolder.ofFloat("scaleY", 1.0f, 0.8f, 1.0f);
-
-        final ObjectAnimator animator = ObjectAnimator
-                .ofPropertyValuesHolder(view, pvhX, pvhY)
-                .setDuration(100);
+        final ObjectAnimator animator = AnimatorUtil.createClickAnimator(view);
 
         animator.addListener(new Animator.AnimatorListener() {
             @Override

@@ -4,40 +4,87 @@ import android.os.Handler;
 import android.util.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 
 import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
 class ClientProxy implements Runnable {
+    private static String TAG = "ZJTest:ClientProxy";
+
     private Socket mSocket;
     private Handler mHandler;
+    private boolean mQuit;
 
     ClientProxy(Socket socket, Handler handler) {
         mSocket = socket;
+
+        try {
+            mSocket.setKeepAlive(false);
+            mSocket.setSoTimeout(5000);
+        } catch (SocketException e) {
+            Log.d(TAG, e.toString());
+        }
+
         mHandler = handler;
     }
 
     @Override
     public void run() {
         try {
-            InputStream inputStream = mSocket.getInputStream();
+            PrintWriter printWriter = NetworkUtil
+                    .getSocketPrintWriter(mSocket);
 
-            byte[] buffer = new byte[1024];
-            int count;
+            int timeOutCount = 0;
 
-            while ((count = inputStream.read(buffer, 0, 1024)) != -1) {
-                String tmp = new String(buffer, 0, count);
+            while (!mQuit) {
+                String temp = NetworkUtil.getStringFromSocket(mSocket);
 
-                if (tmp.equals(NetworkUtil.SYC)) {
+                if (temp == null || temp.length() <= 0) {
+                    Log.d(TAG, "timeout count: " + timeOutCount);
+
+                    ++timeOutCount;
+
+                    if (timeOutCount >= 3) {
+                        Log.d(TAG, "timeout, close the clientProxy");
+                        quit();
+                    }
+
+                    continue;
+                }
+
+                if (temp.equals(NetworkUtil.SYNC)) {
                     mHandler.sendEmptyMessage(
                             Constants.ServerServiceMsg.STOP_BROADCAST);
+
+                    Log.d(TAG, "receive SYNC");
+
+                    printWriter.print(NetworkUtil.ACK);
+                    printWriter.flush();
+
+                    Log.d(TAG, "after send ACK");
                 }
             }
 
-            mSocket.close();
+            printWriter.close();
+
+            Log.d(TAG, "clientProxy finish");
         } catch (IOException e) {
-            Log.d("ZJTest", e.toString());
+            Log.d(TAG, e.toString());
+        }
+    }
+
+    void quit() {
+        try {
+            if (mSocket != null) {
+                mSocket.close();
+                mSocket = null;
+            }
+
+            mQuit = true;
+        } catch (IOException e) {
+            Log.d(TAG, e.toString());
         }
     }
 }

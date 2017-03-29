@@ -9,41 +9,22 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.net.DatagramPacket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
 import static stark.a.is.zhang.tcptest.server.Constants.ServerServiceMsg.*;
-import static stark.a.is.zhang.tcptest.util.NetworkUtil.PORT;
 
 public class ServerService extends Service {
-    private ExecutorService mExecutorService;
+    private static String TAG = "ZJTest:ServerService";
 
     private Messenger mLocalMessenger;
 
     private LocalHandler mLocalHandler;
 
-    private MulticastSocket mMulticastSocket;
-
-    private boolean mStopBroadcast = false;
-
-    private ServerSocket mServerSocket;
+    private BroadcastServerIpThread mBroadcastServerIpThread;
 
     private Messenger mActivityMessenger;
 
-    private boolean mQuit = false;
-
-    public ServerService() {
-        mExecutorService = Executors.newCachedThreadPool();
-    }
+    private ServerThread mServerThread;
 
     @Override
     public void onCreate() {
@@ -58,58 +39,20 @@ public class ServerService extends Service {
     }
 
     private void sendMulticastBroadcast() {
-        try {
-            mMulticastSocket = new MulticastSocket();
-        } catch (IOException e) {
-            Log.d("ZJTest", e.toString());
-        }
-
-        if (mMulticastSocket != null) {
-            broadcastIpInfo();
-        }
+        mBroadcastServerIpThread = new BroadcastServerIpThread(this);
+        mBroadcastServerIpThread.start();
     }
 
-    private void broadcastIpInfo() {
-        new BroadcastThread().start();
-    }
-
-    private class BroadcastThread extends Thread {
-        @Override
-        public void run() {
-            try {
-                String ip = NetworkUtil.getWifiIp(getApplicationContext());
-                byte[] data = ip.getBytes();
-
-                InetAddress address = InetAddress.getByName(NetworkUtil.LAN_ADDRESS);
-
-                DatagramPacket datagramPacket =
-                        new DatagramPacket(data, data.length, address, PORT);
-
-                while (!mStopBroadcast) {
-                    mMulticastSocket.send(datagramPacket);
-                    Thread.sleep(2000);
-                }
-
-                mMulticastSocket.close();
-            } catch (IOException e) {
-                Log.d("ZJTest", e.toString());
-            } catch (InterruptedException e) {
-                Log.d("ZJTest", e.toString());
-            }
+    private void stopMulticastBroadcast() {
+        if (mBroadcastServerIpThread != null) {
+            mBroadcastServerIpThread.quit();
+            mBroadcastServerIpThread = null;
         }
     }
 
     private void initTcpServer() {
-        try {
-            mServerSocket = new ServerSocket(PORT);
-        } catch (IOException e) {
-            Log.d("ZJTest", e.toString());
-        }
-
-        if (mServerSocket != null) {
-            ServiceThread serviceThread = new ServiceThread();
-            serviceThread.start();
-        }
+        mServerThread = new ServerThread(mLocalHandler);
+        mServerThread.start();
     }
 
     @Override
@@ -126,41 +69,31 @@ public class ServerService extends Service {
 
         @Override
         public void handleMessage(Message msg) {
+            ServerService serverService = mServerService.get();
+
             switch (msg.what) {
                 case SET_ACTIVITY_MESSENGER:
-                    mServerService.get().mActivityMessenger =  msg.replyTo;
+                    serverService.mActivityMessenger =  msg.replyTo;
                     break;
 
                 case STOP_BROADCAST:
-                    mServerService.get().mStopBroadcast = true;
+                    serverService.stopMulticastBroadcast();
 
                     Message reply = Message.obtain();
                     reply.what = Constants.ServerActivityMsg.CLIENT_CONNECT;
 
                     try {
-                        mServerService.get().mActivityMessenger.send(reply);
+                        serverService.mActivityMessenger.send(reply);
                     } catch (RemoteException e) {
-                        Log.d("ZJTest", e.toString());
+                        Log.d(TAG, e.toString());
                     }
                     break;
 
                 case QUIT:
-                    mServerService.get().mQuit = true;
+                    serverService.stopMulticastBroadcast();
+                    serverService.mServerThread.quit();
+                    serverService.stopSelf();
                     break;
-            }
-        }
-    }
-
-    private class ServiceThread extends Thread {
-        @Override
-        public void run() {
-            while (!mQuit) {
-                try {
-                    Socket client = mServerSocket.accept();
-                    mExecutorService.execute(new ClientProxy(client, mLocalHandler));
-                } catch (IOException e) {
-                    Log.d("ZJTest", e.toString());
-                }
             }
         }
     }
