@@ -1,5 +1,6 @@
 package stark.a.is.zhang.tcptest.client;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +12,9 @@ import android.widget.Toast;
 import java.lang.ref.WeakReference;
 
 import stark.a.is.zhang.tcptest.R;
+import stark.a.is.zhang.tcptest.client.runnable.CatchServerIpRunnable;
+import stark.a.is.zhang.tcptest.client.runnable.ConnectRunnable;
+import stark.a.is.zhang.tcptest.client.runnable.TransferProxy;
 import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
 public class ClientActivity extends AppCompatActivity implements View.OnClickListener{
@@ -20,10 +24,6 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
 
     private Button mDownLoadButton;
     private Button mUpLoadButton;
-
-    private TransferProxy mTransferProxy;
-
-    private CatchServerIpThread mCatchServerIpThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +56,7 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
 
     private void tryCatchServerAddress() {
         if (NetworkUtil.isWifiConnected(this)) {
-            mCatchServerIpThread = new CatchServerIpThread(mLocalHandler);
-            mCatchServerIpThread.start();
+            TransferProxy.getInstance().execute(new CatchServerIpRunnable(mLocalHandler));
         } else {
             Toast.makeText(
                     this, "WiFi not connected", Toast.LENGTH_LONG).show();
@@ -68,7 +67,9 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.download_button:
-
+                Intent intent = new Intent(this, DownloadActivity.class);
+                intent.putExtra(Constants.SERVER_IP, mServerIp);
+                startActivity(intent);
                 break;
 
             case R.id.upload_button:
@@ -79,25 +80,12 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
 
     private void tryToConnectServer() {
         if (NetworkUtil.isWifiConnected(this)) {
-            mTransferProxy = new TransferProxy(mLocalHandler, mServerIp);
-            mTransferProxy.init();
+            TransferProxy.getInstance()
+                    .execute(new ConnectRunnable(mLocalHandler, mServerIp));
         } else {
             Toast.makeText(
                     this, "WiFi not connected", Toast.LENGTH_LONG).show();
         }
-    }
-
-    @Override
-    protected void onDestroy() {
-        if (mCatchServerIpThread != null) {
-            mCatchServerIpThread.quit();
-        }
-
-        if (mTransferProxy != null) {
-            mTransferProxy.quit();
-        }
-
-        super.onDestroy();
     }
 
     private static class LocalHandler extends Handler {

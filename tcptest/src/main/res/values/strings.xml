@@ -10,4 +10,6 @@
 
     <string name="client_download_button">Download</string>
     <string name="client_upload_button">Upload</string>
+
+    <string name="begin_download">Begin Download</string>
 </resources>
