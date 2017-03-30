@@ -11,6 +11,9 @@ import android.util.Log;
 
 import java.lang.ref.WeakReference;
 
+import stark.a.is.zhang.tcptest.server.runnable.BroadServerIpRunnable;
+import stark.a.is.zhang.tcptest.server.runnable.ServerTransferProxy;
+
 import static stark.a.is.zhang.tcptest.server.Constants.ServerServiceMsg.*;
 
 public class ServerService extends Service {
@@ -20,7 +23,7 @@ public class ServerService extends Service {
 
     private LocalHandler mLocalHandler;
 
-    private BroadcastServerIpThread mBroadcastServerIpThread;
+    private BroadServerIpRunnable mBroadServerIpRunnable;
 
     private Messenger mActivityMessenger;
 
@@ -39,14 +42,14 @@ public class ServerService extends Service {
     }
 
     private void sendMulticastBroadcast() {
-        mBroadcastServerIpThread = new BroadcastServerIpThread(this);
-        mBroadcastServerIpThread.start();
+        mBroadServerIpRunnable = new BroadServerIpRunnable(this);
+        ServerTransferProxy.getInstance().execute(mBroadServerIpRunnable);
     }
 
     private void stopMulticastBroadcast() {
-        if (mBroadcastServerIpThread != null) {
-            mBroadcastServerIpThread.quit();
-            mBroadcastServerIpThread = null;
+        if (mBroadServerIpRunnable != null) {
+            mBroadServerIpRunnable.quit();
+            mBroadServerIpRunnable = null;
         }
     }
 
@@ -78,23 +81,35 @@ public class ServerService extends Service {
 
                 case STOP_BROADCAST:
                     serverService.stopMulticastBroadcast();
-
-                    Message reply = Message.obtain();
-                    reply.what = Constants.ServerActivityMsg.CLIENT_CONNECT;
-
-                    try {
-                        serverService.mActivityMessenger.send(reply);
-                    } catch (RemoteException e) {
-                        Log.d(TAG, e.toString());
-                    }
+                    serverService.reply(Constants.ServerActivityMsg.CLIENT_CONNECT);
                     break;
 
                 case QUIT:
                     serverService.stopMulticastBroadcast();
-                    serverService.mServerThread.quit();
-                    serverService.stopSelf();
+                    serverService.dispose();
                     break;
             }
         }
+    }
+
+    private void reply(int msgId) {
+        Message reply = Message.obtain();
+        reply.what = msgId;
+
+        try {
+            mActivityMessenger.send(reply);
+        } catch (RemoteException e) {
+            Log.d(TAG, e.toString());
+        }
+    }
+
+    private void dispose() {
+        mServerThread.quit();
+
+        if (ServerTransferProxy.isCreated()) {
+            ServerTransferProxy.getInstance().dispose();
+        }
+
+        stopSelf();
     }
 }

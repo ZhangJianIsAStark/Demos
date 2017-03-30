@@ -1,4 +1,4 @@
-package stark.a.is.zhang.tcptest.server;
+package stark.a.is.zhang.tcptest.server.runnable;
 
 import android.os.Handler;
 import android.util.Log;
@@ -8,16 +8,17 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
 
+import stark.a.is.zhang.tcptest.server.Constants;
 import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
-class ClientProxy implements Runnable {
-    private static String TAG = "ZJTest:ClientProxy";
+public class ClientProxyRunnable implements Runnable {
+    private static String TAG = "ZJTest:CPRunnable";
 
     private Socket mSocket;
     private Handler mHandler;
     private boolean mQuit;
 
-    ClientProxy(Socket socket, Handler handler) {
+    public ClientProxyRunnable(Socket socket, Handler handler) {
         mSocket = socket;
 
         try {
@@ -75,7 +76,7 @@ class ClientProxy implements Runnable {
         }
     }
 
-    void quit() {
+    public void quit() {
         try {
             if (mSocket != null) {
                 mSocket.close();

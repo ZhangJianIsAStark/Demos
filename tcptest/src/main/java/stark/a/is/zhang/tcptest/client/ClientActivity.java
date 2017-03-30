@@ -13,8 +13,8 @@ import java.lang.ref.WeakReference;
 
 import stark.a.is.zhang.tcptest.R;
 import stark.a.is.zhang.tcptest.client.runnable.CatchServerIpRunnable;
-import stark.a.is.zhang.tcptest.client.runnable.ConnectRunnable;
-import stark.a.is.zhang.tcptest.client.runnable.TransferProxy;
+import stark.a.is.zhang.tcptest.client.runnable.ConnectServerRunnable;
+import stark.a.is.zhang.tcptest.client.runnable.ClientTransferProxy;
 import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
 public class ClientActivity extends AppCompatActivity implements View.OnClickListener{
@@ -56,7 +56,7 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
 
     private void tryCatchServerAddress() {
         if (NetworkUtil.isWifiConnected(this)) {
-            TransferProxy.getInstance().execute(new CatchServerIpRunnable(mLocalHandler));
+            ClientTransferProxy.getInstance().execute(new CatchServerIpRunnable(mLocalHandler));
         } else {
             Toast.makeText(
                     this, "WiFi not connected", Toast.LENGTH_LONG).show();
@@ -80,8 +80,8 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
 
     private void tryToConnectServer() {
         if (NetworkUtil.isWifiConnected(this)) {
-            TransferProxy.getInstance()
-                    .execute(new ConnectRunnable(mLocalHandler, mServerIp));
+            ClientTransferProxy.getInstance()
+                    .execute(new ConnectServerRunnable(mLocalHandler, mServerIp));
         } else {
             Toast.makeText(
                     this, "WiFi not connected", Toast.LENGTH_LONG).show();
@@ -107,5 +107,14 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
                     break;
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (ClientTransferProxy.isCreated()) {
+            ClientTransferProxy.getInstance().dispose();
+        }
+
+        super.onDestroy();
     }
 }

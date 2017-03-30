@@ -13,13 +13,13 @@ import java.net.SocketAddress;
 import stark.a.is.zhang.tcptest.client.Constants;
 import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
-public class ConnectRunnable implements Runnable {
+public class ConnectServerRunnable implements Runnable {
     private static String TAG = "ZJTest: ConRunnable";
 
     private Handler mHandler;
     private String mServerIp;
 
-    public ConnectRunnable(Handler handler, String serverIp) {
+    public ConnectServerRunnable(Handler handler, String serverIp) {
         mHandler = handler;
         mServerIp = serverIp;
     }

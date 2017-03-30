@@ -1,4 +1,4 @@
-package stark.a.is.zhang.tcptest.server;
+package stark.a.is.zhang.tcptest.server.runnable;
 
 import android.content.Context;
 import android.util.Log;
@@ -12,17 +12,17 @@ import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
 import static stark.a.is.zhang.tcptest.util.NetworkUtil.PORT;
 
-class BroadcastServerIpThread extends Thread {
+public class BroadServerIpRunnable implements Runnable {
     private static String TAG = "ZJTest:BroadIp";
 
     private Context mContext;
     private boolean mQuit;
 
-    BroadcastServerIpThread(Context context) {
+    public BroadServerIpRunnable(Context context) {
         mContext = context;
     }
 
-    void quit() {
+    public void quit() {
         mQuit = true;
     }
 

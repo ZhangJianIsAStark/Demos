@@ -8,8 +8,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import stark.a.is.zhang.tcptest.server.runnable.ClientProxyRunnable;
+import stark.a.is.zhang.tcptest.server.runnable.ServerTransferProxy;
 
 import static stark.a.is.zhang.tcptest.util.NetworkUtil.PORT;
 
@@ -22,9 +23,7 @@ class ServerThread extends Thread {
 
     private boolean mQuit;
 
-    private ExecutorService mExecutorService;
-
-    private List<ClientProxy> mClientProxies;
+    private List<ClientProxyRunnable> mClientProxies;
 
     ServerThread(Handler handler) {
         mHandler = handler;
@@ -39,19 +38,17 @@ class ServerThread extends Thread {
             mQuit = true;
         }
 
-        mExecutorService = Executors.newCachedThreadPool();
         mClientProxies = new ArrayList<>();
     }
 
     void quit() {
         mQuit = true;
 
-        for (ClientProxy clientProxy : mClientProxies) {
+        for (ClientProxyRunnable clientProxy : mClientProxies) {
             clientProxy.quit();
         }
-        mClientProxies.clear();
 
-        mExecutorService.shutdown();
+        mClientProxies.clear();
 
         try {
             if (mServerSocket != null) {
@@ -68,10 +65,11 @@ class ServerThread extends Thread {
             try {
                 Socket client = mServerSocket.accept();
 
-                ClientProxy clientProxy = new ClientProxy(client, mHandler);
+                ClientProxyRunnable clientProxy =
+                        new ClientProxyRunnable(client, mHandler);
                 mClientProxies.add(clientProxy);
 
-                mExecutorService.execute(clientProxy);
+                ServerTransferProxy.getInstance().execute(clientProxy);
             } catch (IOException e) {
                 Log.d(TAG, e.toString());
             }

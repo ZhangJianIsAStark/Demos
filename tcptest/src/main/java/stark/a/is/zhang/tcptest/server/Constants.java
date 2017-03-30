@@ -1,9 +1,9 @@
 package stark.a.is.zhang.tcptest.server;
 
-class Constants {
-    static class ServerServiceMsg {
+public class Constants {
+    public static class ServerServiceMsg {
         static final int SET_ACTIVITY_MESSENGER = 0;
-        static final int STOP_BROADCAST = 1;
+        public static final int STOP_BROADCAST = 1;
         static final int QUIT = 2;
     }
 

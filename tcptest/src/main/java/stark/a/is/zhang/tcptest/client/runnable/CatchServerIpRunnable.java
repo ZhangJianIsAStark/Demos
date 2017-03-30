@@ -24,6 +24,7 @@ public class CatchServerIpRunnable implements Runnable {
     public void run() {
         try {
             MulticastSocket socket = new MulticastSocket(NetworkUtil.PORT);
+            socket.setSoTimeout(20000);
 
             InetAddress address = InetAddress.getByName(NetworkUtil.LAN_ADDRESS);
             socket.joinGroup(address);
