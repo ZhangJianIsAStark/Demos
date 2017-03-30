@@ -5,8 +5,6 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 
@@ -26,18 +24,24 @@ public class ConnectServerRunnable implements Runnable {
 
     @Override
     public void run() {
-        Socket socket = new Socket();
+        SocketAddress socketAddress = NetworkUtil.createTcpSocketAddress(mServerIp);
 
+        if (socketAddress == null) {
+            Log.d(TAG, "bad address: " + mServerIp);
+            return;
+        }
+
+        Socket socket = null;
+        PrintWriter printWriter = null;
         try {
-            InetAddress inetAddress = InetAddress.getByName(mServerIp);
-            SocketAddress socketAddress = new InetSocketAddress(
-                    inetAddress, NetworkUtil.PORT);
+            socket = new Socket();
+            socket.setSoTimeout(50000);
 
             socket.connect(socketAddress);
 
             Log.d(TAG, "connect successful");
 
-            PrintWriter printWriter = NetworkUtil.getSocketPrintWriter(socket);
+            printWriter = NetworkUtil.getSocketPrintWriter(socket);
             printWriter.print(NetworkUtil.SYNC);
             printWriter.flush();
 
@@ -50,12 +54,20 @@ public class ConnectServerRunnable implements Runnable {
             if (data != null && data.equals(NetworkUtil.ACK)) {
                 mHandler.sendEmptyMessage(Constants.CONNECT_SUCCESSFUL);
             }
-
-            printWriter.close();
-
-            socket.close();
         } catch (IOException e) {
             Log.d(TAG, e.toString());
+        } finally {
+            if (printWriter != null) {
+                printWriter.close();
+            }
+
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    Log.d(TAG, e.toString());
+                }
+            }
         }
     }
 }

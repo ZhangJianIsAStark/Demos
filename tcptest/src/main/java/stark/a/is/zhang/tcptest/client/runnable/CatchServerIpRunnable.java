@@ -22,8 +22,10 @@ public class CatchServerIpRunnable implements Runnable {
 
     @Override
     public void run() {
+        MulticastSocket socket = null;
+
         try {
-            MulticastSocket socket = new MulticastSocket(NetworkUtil.PORT);
+            socket = new MulticastSocket(NetworkUtil.PORT);
             socket.setSoTimeout(20000);
 
             InetAddress address = InetAddress.getByName(NetworkUtil.LAN_ADDRESS);
@@ -38,11 +40,14 @@ public class CatchServerIpRunnable implements Runnable {
 
             Log.d(TAG, "receive IP from server: " + data);
 
-            socket.close();
-
             mHandler.sendMessage(mHandler.obtainMessage(Constants.GET_SERVER_IP, data));
         } catch (IOException e) {
             Log.d(TAG, e.toString());
+            //may add some error dispose msg
+        } finally {
+            if (socket != null) {
+                socket.close();
+            }
         }
     }
 }

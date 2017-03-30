@@ -5,4 +5,5 @@ public class Constants {
 
     public static final int GET_SERVER_IP = 0;
     public static final int CONNECT_SUCCESSFUL = 1;
+    public static final int GET_PICTURE_SIZE = 2;
 }

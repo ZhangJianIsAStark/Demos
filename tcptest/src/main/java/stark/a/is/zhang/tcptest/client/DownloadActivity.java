@@ -1,5 +1,7 @@
 package stark.a.is.zhang.tcptest.client;
 
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,10 +13,13 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
 import stark.a.is.zhang.tcptest.R;
+import stark.a.is.zhang.tcptest.client.runnable.ClientTransferProxy;
+import stark.a.is.zhang.tcptest.client.runnable.DownloadRunnable;
 import stark.a.is.zhang.tcptest.model.ViewModel;
 
 public class DownloadActivity extends AppCompatActivity {
@@ -22,6 +27,8 @@ public class DownloadActivity extends AppCompatActivity {
 
     private RecyclerView mRecyclerView;
     private List<ViewModel> mViewModelList;
+
+    private LocalHandler mHandler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +43,11 @@ public class DownloadActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         mRecyclerView.setAdapter(new ViewAdapter());
+
+        mHandler = new LocalHandler(this);
+
+        ClientTransferProxy.getInstance()
+                .execute(new DownloadRunnable(mHandler, mServerIp));
     }
 
     private class ItemHolder extends RecyclerView.ViewHolder {
@@ -86,6 +98,19 @@ public class DownloadActivity extends AppCompatActivity {
         @Override
         public int getItemCount() {
             return mViewModelList.size();
+        }
+    }
+
+    private static class LocalHandler extends Handler {
+        private WeakReference<DownloadActivity> mDownloadActivity;
+
+        LocalHandler(DownloadActivity activity) {
+            mDownloadActivity = new WeakReference<>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
         }
     }
 }

@@ -53,10 +53,10 @@ public class BroadServerIpRunnable implements Runnable {
                 }
 
                 Log.d(TAG, "finish sending broadcast");
-
-                mMulticastSocket.close();
             } catch (IOException | InterruptedException e) {
                 Log.d(TAG, e.toString());
+            } finally {
+                mMulticastSocket.close();
             }
         }
     }

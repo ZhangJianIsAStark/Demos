@@ -14,18 +14,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
+import java.net.UnknownHostException;
 
 public class NetworkUtil {
-    public static String TAG = "ZJTest: NetworkUtil";
+    private static String TAG = "ZJTest: NetworkUtil";
 
     public static final int PORT = 8848;
+    public static final String LAN_ADDRESS = "224.0.0.1";
 
     public static final String SYNC = "sync";
-
     public static final String ACK = "ack";
-
-    public static final String LAN_ADDRESS = "224.0.0.1";
+    public static final String BEGIN_DOWN_LOAD = "download";
+    public static final String GET_THUMB_NAIL = "thumbnail";
+    public static final String UP_LOAD = "upload";
 
     public static boolean isWifiConnected(Context context) {
         ConnectivityManager cm = (ConnectivityManager) context
@@ -59,6 +64,19 @@ public class NetworkUtil {
     private static String int2IpString(int i) {
         return (i & 0xFF) + "." + ((i >> 8) & 0xFF)
                 + "." + ((i >> 16) & 0xFF) + "." + ((i >> 24) & 0xFF);
+    }
+
+    public static SocketAddress createTcpSocketAddress(String ipAddress) {
+        SocketAddress socketAddress = null;
+
+        try {
+            InetAddress inetAddress = InetAddress.getByName(ipAddress);
+            socketAddress =new InetSocketAddress(inetAddress, NetworkUtil.PORT);
+        } catch (UnknownHostException e) {
+            Log.d(TAG, e.toString());
+        }
+
+        return socketAddress;
     }
 
     public static PrintWriter getSocketPrintWriter(Socket socket) throws IOException {

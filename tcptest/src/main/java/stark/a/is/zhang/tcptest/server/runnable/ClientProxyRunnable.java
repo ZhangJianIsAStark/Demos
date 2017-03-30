@@ -12,11 +12,15 @@ import stark.a.is.zhang.tcptest.server.Constants;
 import stark.a.is.zhang.tcptest.util.NetworkUtil;
 
 public class ClientProxyRunnable implements Runnable {
-    private static String TAG = "ZJTest:CPRunnable";
+    private static String TAG = "ZJTest:CpRunnable";
 
     private Socket mSocket;
+
     private Handler mHandler;
+
     private boolean mQuit;
+
+    private int mTimeOutCount = 0;
 
     public ClientProxyRunnable(Socket socket, Handler handler) {
         mSocket = socket;
@@ -37,34 +41,23 @@ public class ClientProxyRunnable implements Runnable {
             PrintWriter printWriter = NetworkUtil
                     .getSocketPrintWriter(mSocket);
 
-            int timeOutCount = 0;
-
             while (!mQuit) {
-                String temp = NetworkUtil.getStringFromSocket(mSocket);
+                String msg = NetworkUtil.getStringFromSocket(mSocket);
 
-                if (temp == null || temp.length() <= 0) {
-                    Log.d(TAG, "timeout count: " + timeOutCount);
-
-                    ++timeOutCount;
-
-                    if (timeOutCount >= 3) {
-                        Log.d(TAG, "timeout, close the clientProxy");
-                        quit();
-                    }
-
+                if (msg == null || msg.length() <= 0) {
+                    judgeForQuit();
                     continue;
                 }
 
-                if (temp.equals(NetworkUtil.SYNC)) {
-                    mHandler.sendEmptyMessage(
-                            Constants.ServerServiceMsg.STOP_BROADCAST);
+                mTimeOutCount = 0;
 
-                    Log.d(TAG, "receive SYNC");
+                switch (msg) {
+                    case NetworkUtil.SYNC:
+                        Log.d(TAG, "receive SYNC");
 
-                    printWriter.print(NetworkUtil.ACK);
-                    printWriter.flush();
-
-                    Log.d(TAG, "after send ACK");
+                        sendMsgToService(Constants.ServerServiceMsg.STOP_BROADCAST);
+                        sendMsgToClient(printWriter, NetworkUtil.ACK);
+                        break;
                 }
             }
 
@@ -74,6 +67,26 @@ public class ClientProxyRunnable implements Runnable {
         } catch (IOException e) {
             Log.d(TAG, e.toString());
         }
+    }
+
+    private void judgeForQuit() {
+        Log.d(TAG, "timeout count: " + mTimeOutCount);
+
+        ++mTimeOutCount;
+
+        if (mTimeOutCount >= 3) {
+            Log.d(TAG, "timeout, close the clientProxy");
+            quit();
+        }
+    }
+
+    private void sendMsgToService(int msgId) {
+        mHandler.sendEmptyMessage(msgId);
+    }
+
+    private void sendMsgToClient(PrintWriter printWriter, String msg) {
+        printWriter.print(msg);
+        printWriter.flush();
     }
 
     public void quit() {
