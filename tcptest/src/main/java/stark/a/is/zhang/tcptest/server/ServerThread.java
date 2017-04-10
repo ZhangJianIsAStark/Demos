@@ -1,5 +1,6 @@
 package stark.a.is.zhang.tcptest.server;
 
+import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
@@ -25,7 +26,10 @@ class ServerThread extends Thread {
 
     private List<ClientProxyRunnable> mClientProxies;
 
-    ServerThread(Handler handler) {
+    private Context mContext;
+
+    ServerThread(Context context, Handler handler) {
+        mContext = context;
         mHandler = handler;
 
         try {
@@ -66,7 +70,7 @@ class ServerThread extends Thread {
                 Socket client = mServerSocket.accept();
 
                 ClientProxyRunnable clientProxy =
-                        new ClientProxyRunnable(client, mHandler);
+                        new ClientProxyRunnable(client, mHandler, mContext);
                 mClientProxies.add(clientProxy);
 
                 ServerTransferProxy.getInstance().execute(clientProxy);

@@ -54,7 +54,7 @@ public class ServerService extends Service {
     }
 
     private void initTcpServer() {
-        mServerThread = new ServerThread(mLocalHandler);
+        mServerThread = new ServerThread(this, mLocalHandler);
         mServerThread.start();
     }
 

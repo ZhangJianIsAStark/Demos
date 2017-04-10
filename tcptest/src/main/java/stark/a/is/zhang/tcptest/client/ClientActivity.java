@@ -73,7 +73,7 @@ public class ClientActivity extends AppCompatActivity implements View.OnClickLis
                 break;
 
             case R.id.upload_button:
-
+                //wait
                 break;
         }
     }

@@ -22,7 +22,7 @@ import stark.a.is.zhang.tcptest.client.runnable.ClientTransferProxy;
 import stark.a.is.zhang.tcptest.client.runnable.DownloadRunnable;
 import stark.a.is.zhang.tcptest.model.ViewModel;
 
-public class DownloadActivity extends AppCompatActivity {
+public class DownloadActivity extends AppCompatActivity{
     private String mServerIp;
 
     private RecyclerView mRecyclerView;
@@ -110,7 +110,19 @@ public class DownloadActivity extends AppCompatActivity {
 
         @Override
         public void handleMessage(Message msg) {
-            super.handleMessage(msg);
+            switch (msg.what) {
+                case Constants.ADD_VIEW_MODEL:
+                    ViewModel viewModel = (ViewModel) msg.obj;
+                    mDownloadActivity.get().mViewModelList.add(viewModel);
+                    break;
+
+                case Constants.ADD_VIEW_MODEL_DOWN:
+                    mDownloadActivity.get().mRecyclerView.getAdapter().notifyDataSetChanged();
+                    break;
+
+                default:
+                    super.handleMessage(msg);
+            }
         }
     }
 }
